@@ -1,31 +1,56 @@
 import pygame
+import datetime
+
 pygame.init()
-W, H = 800, 800
-x = W//2
-y = H//2
-WHITE = (255, 255, 255)
-sc = pygame.display.set_mode((W, H))
-sc.fill(WHITE)
-mickey = pygame.image.load("images/main-clock.png")
-leftHand = pygame.image.load("images/left-hand.png")
-rightHand = pygame.image.load("images/right-hand.png")
-mickeyRect = mickey.get_rect()
-sc.blit(mickey, (x, y))
-sc.blit(mickey, mickeyRect)
-def blitRotateCenter(surf, image, center, angle):
-    rotated_image = pygame.transform.rotate(image, angle)
-    new_rect = rotated_image.get_rect(center = image.get_rect(center = center).center)
-    surf.blit(rotated_image, new_rect)
-langle = 0
-rangle = 0
-while True:
+
+size = w,h = (1400, 1050)
+
+time = datetime.datetime.now()
+
+angle = -(int(time.strftime("%S")) * 6) - 6
+angleM = -(int(time.strftime("%M")) * 6 + (int(time.strftime("%S")) * 6 / 60)) - 54
+
+def rotate(image, rect, angle):
+    new_image = pygame.transform.rotate(image, angle)
+    rect = new_image.get_rect(center = rect.center)
+    return new_image, rect
+
+screen = pygame.display.set_mode(size)
+pygame.display.set_caption('Clock')
+
+mickey = pygame.image.load('main-clock.png')
+seconds = pygame.image.load('left-hand.png')
+minutes = pygame.image.load('right-hand.png')
+
+imagem = pygame.Surface(size, pygame.SRCALPHA)
+imagem.blit(minutes, (450, 290))
+newm = imagem
+rectm = imagem.get_rect(center = (w//2, h//2))
+
+image = pygame.Surface((63, h), pygame.SRCALPHA)
+image.blit(seconds, (0, 0))
+new = image
+rect = image.get_rect(center = (635, 465))
+
+clock = pygame.time.Clock()
+done = False
+
+FPS = 60
+
+while not done:
+    clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            exit()
-    
-    langle -= 1
-    rangle += 1
-    
-    blitRotateCenter(sc, leftHand, (x,y), langle) 
-    blitRotateCenter(sc, rightHand, (x,y), rangle)
+            done = True
+    screen.blit(mickey, (0, 0))
+    screen.blit(image, rect)
+    screen.blit(imagem, rectm)
+
+    image, rect = rotate(new, rect, angle)
+    imagem, rectm = rotate(newm, rectm, angleM)
+
+    angle -= 0.099
+    angleM -= 0.099/60
+
     pygame.display.update()
+pygame.quit()
